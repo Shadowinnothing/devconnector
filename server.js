@@ -1,6 +1,16 @@
 const express = require('express')
+const mongoose = require('mongoose')
 
 const app = express()
+
+// db config
+const db = require('./config/keys').mongoURI
+
+// connect to mongodb
+mongoose
+    .connect(db)
+    .then(() => console.log('[server.js] Connected to MongoDB'))
+    .catch(err => console.log('[server.js] Error connecting to MongoDB: ' + err))
 
 app.get('/', (req, res) => {
     console.log(req.route)
@@ -9,5 +19,5 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 4000
 app.listen(PORT, () => {
-    console.log(`Server running on port: ${PORT}`)
+    console.log(`[server.js] Server running on port: ${PORT}`)
 })
