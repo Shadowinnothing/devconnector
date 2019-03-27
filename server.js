@@ -18,7 +18,7 @@ mongoose
     .catch(err => console.log(`[server.js] Error connecting to MongoDB: ${err}`))
 
 app.get('/', (req, res) => {
-    console.log(req.route)
+    //console.log(req.route)
     res.send('Hello World!')
 })
 
