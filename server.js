@@ -1,5 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const bodyParser = require('body-parser')
 const date = require('date-and-time')
 
 const posts = require('./routes/api/posts')
@@ -7,6 +8,10 @@ const profile = require('./routes/api/profile')
 const users = require('./routes/api/users')
 
 const app = express()
+
+// Body Parser Middleware
+app.use(bodyParser.urlencoded({ extended: false }))
+app.use(bodyParser.json())
 
 // db config
 const db = require('./config/keys').mongoURI
@@ -20,6 +25,10 @@ mongoose
 app.get('/', (req, res) => {
     //console.log(req.route)
     res.send('Hello World!')
+})
+
+app.post('/', (req, res) => {
+    res.status(200).json({ "msg": "Post Req" })
 })
 
 // use routes
