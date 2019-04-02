@@ -3,9 +3,13 @@ const gravatar = require('gravatar')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const passport = require('passport')
+const jwtSecret = require('../../config/keys').secretOrKey
 
 const User = require('../../models/User')
-const jwtSecret = require('../../config/keys').secretOrKey
+
+// Load input validation
+const validateRegisterInput = require('../../validation/register')
+const validateLoginInput = require('../../validation/login')
 
 // @route   GET /api/users/test
 // @desc    Test users route
@@ -17,11 +21,19 @@ router.get('/test', (req, res) => { res.json({msg: "Users is working"}) })
 // @return  New User or Error
 // @access  Public
 router.post('/register', (req, res) => {
+    const { errors, isValid } = validateRegisterInput(req.body)
+
+    // Check Validation
+    if(!isValid) {
+        return res.status(400).json(errors)
+    }
+
     // make sure email is unique
     User.findOne({ email: req.body.email })
         .then(user => {
             if(user) {
-                return res.status(400).json({ email: 'Email already exists in database' })
+                errors.email = 'Email already exists in database'
+                return res.status(400).json(errors)
             } else {
                 if(!req.body.email){
                     console.log('shits fucked, there\'s is no email')
@@ -63,14 +75,20 @@ router.post('/register', (req, res) => {
 // @return  JWT - JSONWebToken
 // @access  Public
 router.post('/login', (req, res) => {
+    const { errors, isValid } = validateLoginInput(req.body)
+
+    // Check Validation
+    if(!isValid) {
+        return res.status(400).json(errors)
+    }
+
     const { email, password } = req.body
-    //const email = req.body.email
-    //const password = req.body.password
     
     User.findOne({ email })
         .then(user => {
             if(!user) {
-                return res.status(404).json({ "error": "user not found" })
+                errors.email = 'user not found'
+                return res.status(404).json(errors)
             }
             bcrypt.compare(password, user.password)
                 .then(passwordsMatch => {
@@ -90,7 +108,8 @@ router.post('/login', (req, res) => {
                             })
                         })
                     } else {
-                        return res.status(400).json({ "login": "login failed" })
+                        errors.password = 'login failed'
+                        return res.status(400).json(errors)
                     }
                 })
                 .catch(err => {
