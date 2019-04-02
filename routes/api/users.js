@@ -2,6 +2,7 @@ const router = require('express').Router()
 const gravatar = require('gravatar')
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
+const passport = require('passport')
 
 const User = require('../../models/User')
 const jwtSecret = require('../../config/keys').secretOrKey
@@ -81,7 +82,7 @@ router.post('/login', (req, res) => {
                             avatar: user.avatar
                         }
 
-                        // Delete auth_token after an hour
+                        // Sign tokenDelete auth_token after an hour
                         jwt.sign(payload, jwtSecret, { expiresIn: 3600 }, (err, token) => {
                             res.json({
                                 login: "Login Successful!",
@@ -96,6 +97,19 @@ router.post('/login', (req, res) => {
                     return res.send(err) 
                 })
         })
+})
+
+// @route   GET /api/users/current
+// @desc    Returns the current user
+// @return  Return current user
+// @access  Private
+router.get('/current', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const {id, name, email} = req.user
+    res.json({
+        id,
+        name,
+        email
+    })
 })
 
 module.exports = router;

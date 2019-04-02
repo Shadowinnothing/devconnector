@@ -1,5 +1,6 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const passport = require('passport')
 const bodyParser = require('body-parser')
 const date = require('date-and-time')
 
@@ -13,6 +14,12 @@ const app = express()
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
 
+// Passport Middleware
+app.use(passport.initialize())
+
+// Passport Config
+require('./config/passport')(passport) 
+
 // db config
 const db = require('./config/keys').mongoURI
 
@@ -21,11 +28,6 @@ mongoose
     .connect(db)
     .then(() => console.log('[server.js] Connected to MongoDB'))
     .catch(err => console.log(`[server.js] Error connecting to MongoDB: ${err}`))
-
-app.get('/', (req, res) => {
-    //console.log(req.route)
-    res.send('Hello World!')
-})
 
 app.post('/', (req, res) => {
     res.status(200).json({ "msg": "Post Req" })
