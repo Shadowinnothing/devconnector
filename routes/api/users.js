@@ -101,7 +101,7 @@ router.post('/login', (req, res) => {
                         }
 
                         // Sign tokenDelete auth_token after an hour
-                        jwt.sign(payload, jwtSecret, { expiresIn: 3600 }, (err, token) => {
+                        jwt.sign(payload, jwtSecret, { expiresIn: '2 hours' }, (err, token) => {
                             res.json({
                                 login: "Login Successful!",
                                 token: `Bearer ${token}`
