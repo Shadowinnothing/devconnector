@@ -1,5 +1,5 @@
 const router = require('express').Router()
-const mongoose = require('mongoose')
+const mongoose = require('mongoose') // why is this imported lol, i'm scared to delete it
 const passport = require('passport')
 
 // Load validation
@@ -19,10 +19,10 @@ router.get('/test', (req, res) => { res.json({msg: "Profile is working"}) })
 // @access  Private
 router.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
     const errors = {}
-    console.log(req.user.id)
+    
     Profile.findOne({ user : req.user.id })
+        .populate('user', ['name', 'avatar'])
         .then(profile => {
-            console.log(profile)
             if(!profile) {
                 errors.noProfile = 'No profile for this user found'
                 return res.status(404).json(errors)
@@ -64,6 +64,10 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
     if(req.body.facebook) profileFields.social.facebook = req.body.facebook
     if(req.body.instagram) profileFields.social.instagram = req.body.instagram
 
+    // I'm actually not quite sure if I'll keep the 
+    // education and experience initialization like this...
+    // I kinda hate it...
+
     // Education the same way
     profileFields.education = {}
     if(req.body.currentEducation) profileFields.education.current = req.body.currentEducation
@@ -71,6 +75,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
     if(req.body.educationDescription) profileFields.education.description = req.body.educationDescription
     if(req.body.educationFrom) profileFields.education.from = req.body.educationFrom
     if(req.body.educationTo) profileFields.education.to = req.body.educationTo
+    if(req.body.fieldOfStudy) profileFields.education.fieldOfStudy = req.body.fieldOfStudy
     if(req.body.school) profileFields.education.school = req.body.school
 
     // Experience, same
@@ -103,12 +108,12 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
                             errors.handle = 'Handle already exists'
                             return res.status(400).json(errors)
                         }
-
+                        
                         // Save Profile
                         new Profile(profileFields)
                         .save()
                         .then(profile => res.json(profile))
-                        .catch(err => res.json(err))
+                        .catch(err => res.status(412).json(err))
                     })
             }
         })
