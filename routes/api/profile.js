@@ -44,6 +44,7 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
     }
 
     // Get Fields
+    // This doesn't fix all problems but whatever
     const profileFields = {...req.body}
     profileFields.id = null
 
@@ -65,9 +66,9 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
 
     // Education the same way
     profileFields.education = {}
-    if(req.body.current) profileFields.education.current = req.body.current
+    if(req.body.currentEducation) profileFields.education.current = req.body.currentEducation
     if(req.body.degree) profileFields.education.degree = req.body.degree
-    if(req.body.description) profileFields.education.description = req.body.description
+    if(req.body.educationDescription) profileFields.education.description = req.body.educationDescription
     if(req.body.educationFrom) profileFields.education.from = req.body.educationFrom
     if(req.body.educationTo) profileFields.education.to = req.body.educationTo
     if(req.body.school) profileFields.education.school = req.body.school
@@ -75,8 +76,8 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
     // Experience, same
     profileFields.experience = {}
     if(req.body.company) profileFields.experience.company = req.body.company
-    if(req.body.current) profileFields.experience.current = req.body.current
-    if(req.body.description) profileFields.experience.description = req.body.description
+    if(req.body.currentExperience) profileFields.experience.current = req.body.currentExperience
+    if(req.body.experienceDescription) profileFields.experience.description = req.body.experienceDescription
     if(req.body.experienceFrom) profileFields.experience.from = req.body.experienceFrom
     if(req.body.experienceTo) profileFields.experience.to = req.body.experienceTo
     if(req.body.location) profileFields.experience.location = req.body.location
@@ -85,7 +86,6 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
     Profile.findOne({ user: req.user.id })
         .then(profile => {
             if(profile){
-                console.log('made it')
                 // Update Profile
                 Profile.findOneAndUpdate(
                     { user: req.user.id }, 
