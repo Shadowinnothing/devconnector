@@ -14,6 +14,63 @@ const Profile = require('../../models/Profile')
 // @access  Public
 router.get('/test', (req, res) => { res.json({msg: "Profile is working"}) })
 
+// @route   GET /api/profile/all
+// @desc    Get all profiles
+// @access  Public
+router.get('/all', (req, res) => {
+    const errors = {}
+
+    Profile.find()
+        .populate('user', ['name', 'avatar'])
+        .then(profiles => {
+            if(!profiles) {
+                errors.noProfile = 'No Profiles Found, lol this could be real bad, hopefully you never see this'
+                return res.status(404).json(errors)
+            }
+
+            res.json(profiles)
+        })
+        .catch(err => res.status(412).json({ noProfile: 'No Profiles Found, more likely than not this is an error connecting to the db' }))
+})
+
+// @route   GET /api/profile/handle/:handle
+// @desc    Get a user profile by their handle
+// @access  Public
+router.get('/handle/:handle', (req, res) => {
+    const errors = {}
+
+    Profile.findOne({ handle: req.params.handle })
+        .populate('user', ['name', 'avatar'])
+        .then(profile => {
+            if(!profile) {
+                errors.noProfile = 'No Profile Found'
+                return res.status(404).json(errors)
+            }
+
+            res.json(profile)
+        })
+        .catch(err => res.status(412).json({ noProfile: 'No Profile Found' }))
+})
+
+// @route   GET /api/profile/user/:userId
+// @desc    Get a user profile by their userId
+// @access  Public
+router.get('/user/:userId', (req, res) => {
+    const errors = {}
+
+    Profile.findOne({ user: req.params.userId })
+        .populate('user', ['name', 'avatar'])
+        .then(profile => {
+            if(!profile) {
+                errors.noProfile = 'No Profile Found'
+                return res.status(404).json(errors)
+            }
+
+            res.json(profile)
+        })
+        .catch(err => res.status(412).json({ noProfile: 'No Profile Found' }))
+})
+
 // @route   GET /api/profile
 // @desc    Get current User's profile
 // @access  Private
