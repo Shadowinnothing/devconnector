@@ -220,4 +220,59 @@ router.post('/education', passport.authenticate('jwt', { session: false }), (req
         .catch(err => res.status(412).json(err))
 })
 
+// @route   DELETE /api/profile/experience/:expId
+// @desc    Delete experience from profile
+// @access  Private
+router.delete('/experience/:expId', passport.authenticate('jwt', { session: false }), (req, res) => {
+    Profile.findOne({ user: req.user.id })
+        .then(profile => {
+            // Get remove index
+            const removeIndex = profile.experience
+                .map(item => item.id)
+                .indexOf(req.params.expId)
+
+            // Remove out of array
+            profile.experience.splice(removeIndex, 1)
+            profile
+                .save()
+                .then(profile => res.json(profile))
+                .catch(err => res.json(err))
+        })
+        .catch(err => res.status(412).json(err))
+})
+
+// @route   DELETE /api/profile/education/:eduId
+// @desc    Delete education from profile
+// @access  Private
+router.delete('/education/:eduId', passport.authenticate('jwt', { session: false }), (req, res) => {
+    Profile.findOne({ user: req.user.id })
+        .then(profile => {
+            // Get remove index
+            const removeIndex = profile.education
+                .map(item => item.id)
+                .indexOf(req.params.eduId)
+
+            // Remove out of array
+            profile.education.splice(removeIndex, 1)
+            profile
+                .save()
+                .then(profile => res.json(profile))
+                .catch(err => res.json(err))
+        })
+        .catch(err => res.status(412).json(err))
+})
+
+// @route   DELETE /api/profile/
+// @desc    Delete user and profile
+// @access  Private
+router.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+    Profile.findOneAndRemove({ user: req.user.id })
+        .then(() => {
+            User.findOneAndRemove({ _id: req.user.id })
+                .then(() => res.json({ success: "User and Profile deleted" }))
+                .catch(err => res.json(err))
+        })
+        .catch(err => res.json(err))
+})
+
 module.exports = router;
