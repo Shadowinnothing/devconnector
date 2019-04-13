@@ -4,6 +4,8 @@ const passport = require('passport')
 
 // Load validation
 const validateProfileInput = require('../../validation/profile')
+const validateExperienceInput = require('../../validation/experience')
+const validateEducationInput = require('../../validation/education')
 
 // Load User and Profile Models
 const User = require('../../models/User')
@@ -121,30 +123,6 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
     if(req.body.facebook) profileFields.social.facebook = req.body.facebook
     if(req.body.instagram) profileFields.social.instagram = req.body.instagram
 
-    // I'm actually not quite sure if I'll keep the 
-    // education and experience initialization like this...
-    // I kinda hate it...
-
-    // Education the same way
-    profileFields.education = {}
-    if(req.body.currentEducation) profileFields.education.current = req.body.currentEducation
-    if(req.body.degree) profileFields.education.degree = req.body.degree
-    if(req.body.educationDescription) profileFields.education.description = req.body.educationDescription
-    if(req.body.educationFrom) profileFields.education.from = req.body.educationFrom
-    if(req.body.educationTo) profileFields.education.to = req.body.educationTo
-    if(req.body.fieldOfStudy) profileFields.education.fieldOfStudy = req.body.fieldOfStudy
-    if(req.body.school) profileFields.education.school = req.body.school
-
-    // Experience, same
-    profileFields.experience = {}
-    if(req.body.company) profileFields.experience.company = req.body.company
-    if(req.body.currentExperience) profileFields.experience.current = req.body.currentExperience
-    if(req.body.experienceDescription) profileFields.experience.description = req.body.experienceDescription
-    if(req.body.experienceFrom) profileFields.experience.from = req.body.experienceFrom
-    if(req.body.experienceTo) profileFields.experience.to = req.body.experienceTo
-    if(req.body.location) profileFields.experience.location = req.body.location
-    if(req.body.title) profileFields.experience.title = req.body.title
-
     Profile.findOne({ user: req.user.id })
         .then(profile => {
             if(profile){
@@ -174,6 +152,72 @@ router.post('/', passport.authenticate('jwt', { session: false }), (req, res) =>
                     })
             }
         })
+})
+
+// @route   POST /api/profile/experience
+// @desc    Add experience to profile
+// @access  Private
+router.post('/experience', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const { errors, isValid } = validateExperienceInput(req.body)
+
+    // Check Validation
+    if(!isValid){
+        return res.status(400).json(errors)
+    }
+
+    const { title, company, location, from, to, current, description } = req.body
+    Profile.findOne({ user: req.user.id })
+        .then(profile => {
+            const newExperience = {
+                title,
+                company,
+                location,
+                from,
+                to,
+                current,
+                description
+            }
+
+            // Add to experience array for the given profile
+            profile.experience.unshift(newExperience)
+            profile.save()
+                .then(profile => res.json(profile))
+                .catch(err => res.status(412).json(err))
+        })
+        .catch(err => res.status(412).json(err))
+})
+
+// @route   POST /api/profile/education
+// @desc    Add education to profile
+// @access  Private
+router.post('/education', passport.authenticate('jwt', { session: false }), (req, res) => {
+    const { errors, isValid } = validateEducationInput(req.body)
+
+    // Check Validation
+    if(!isValid){
+        return res.status(400).json(errors)
+    }
+
+    const { school, degree, fieldOfStudy, from, to, current, description } = req.body
+    Profile.findOne({ user: req.user.id })
+        .then(profile => {
+            const newEducation = {
+                school,
+                degree,
+                fieldOfStudy,
+                from,
+                to,
+                current,
+                description
+            }
+
+            // Add to education array for the given profile
+            profile.education.unshift(newEducation)
+            profile.save()
+                .then(profile => res.json(profile))
+                .catch(err => res.status(412).json(err))
+        })
+        .catch(err => res.status(412).json(err))
 })
 
 module.exports = router;
