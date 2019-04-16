@@ -124,14 +124,52 @@ router.post('/unlike/:postId', passport.authenticate('jwt', { session: false }),
 // @desc    Comment on a post
 // @access  Private
 router.post('/comment/:postId', passport.authenticate('jwt', { session: false }), (req, res) => {
-    
+    const { errors, isValid } = validatePostInput(req.body)
+
+    // Check Validation
+    if(!isValid){
+        return res.status(400).json(errors)
+    }
+
+    Post.findById(req.params.postId)
+        .then(post => {
+            const { text, name } = req.body
+            const { user, avatar } = req.user
+            newComment = {
+                text,
+                name,
+                user,
+                avatar
+            }
+
+            // Add to comments array
+            post.comments.push(newComment)
+            post.save().then(post => res.json(post))
+        })
+        .catch(err => res.status(404).json(err))
 })
 
-// @route   POST /api/posts/uncomment/:postId
-// @desc    Uncomment a post
+// @route   POST /api/posts/comment/:postId/:commentId
+// @desc    Remove comment from post
 // @access  Private
-router.post('/uncomment/:postId', passport.authenticate('jwt', { session: false }), (req, res) => {
-    
+router.delete('/comment/:postId/:commentId', passport.authenticate('jwt', { session: false }), (req, res) => {
+    Post.findById(req.params.postId)
+        .then(post => {
+            // Check to see if comment exists
+            if(post.comments.filter(comment => comment._id.toString() === req.params.commentId).length === 0) {
+                return res.status(404).json({ noComment: "Comment does not exist" })
+            }
+
+            // Get remove index
+            const removeIndex = post.comments
+                .map(item => item._id.toString())
+                .indexOf(req.params.commentId)
+
+            // Remove user from array
+            post.comments.splice(removeIndex, 1)
+            post.save().then(post => res.json(post))
+        })
+        .catch(err => res.status(404).json(err))
 })
 
 module.exports = router;
