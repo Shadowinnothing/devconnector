@@ -11,15 +11,8 @@ class Register extends Component {
             password2: '',
             errors: {}
         }
-
-        //this.onChange = this.onChange.bind(this)
     }
 
-    // So when onChange is declared like a normal function onChange(){}
-    // we need to bind this method to the state (see above). However...
-    // I set this function up as an arrow function and that seems to bind
-    // the function to the state anyway...Hmm, well if you have issues in
-    // the future with onChange this is where you'll find it
     onChange = (event) => {
         this.setState({ [event.target.name]: event.target.value })
     }
